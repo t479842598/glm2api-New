@@ -1,13 +1,30 @@
 from __future__ import annotations
 
 import errno
+import os
 import signal
+import ssl
 import traceback
 
 from .config import AppConfig, ConfigError, load_config
 from .logging_utils import get_logger, setup_logging
 from .server import GLM2APIServer
 from .services.glm_client import GLMWebClient
+
+
+# ── 自动配置 SSL 证书 ─────────────────────────────────────────────────────────
+# macOS Homebrew Python 等环境下系统根证书路径可能缺失，尝试加载 certifi 的
+# CA 证书包，确保 https 请求（尤其是对话测试）不会 SSL 验证失败。
+try:
+    import certifi  # type: ignore[import-untyped]
+
+    _ca_bundle = certifi.where()
+    os.environ.setdefault("SSL_CERT_FILE", _ca_bundle)
+    ssl._create_default_https_context = lambda: ssl.create_default_context(
+        cafile=_ca_bundle,
+    )
+except ImportError:
+    pass
 
 
 class StartupError(RuntimeError):
