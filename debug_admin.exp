@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+# Admin key in .env
+send "echo '=== ADMIN_KEY ===' && grep -i admin /opt/glm2api/.env | grep -v '^#'\r"
+expect "# "
+
+# Test login API
+send "echo '=== LOGIN TEST ==='\r"
+expect "# "
+send "curl -s -D - -X POST https://127.0.0.1:8001/admin/api/login -H 'Content-Type: application/json' -d '{\"key\":\"glm2api-admin\"}' 2>&1\r"
+expect "# "
+
+# Test login with wrong key
+send "echo '=== BAD KEY ===' && curl -s -X POST https://127.0.0.1:8001/admin/api/login -H 'Content-Type: application/json' -d '{\"key\":\"wrong\"}' 2>&1\r"
+expect "# "
+
+# Test via nginx
+send "echo '=== VIA NGINX ===' && curl -sk -D - -X POST https://127.0.0.1/admin/api/login -H 'Content-Type: application/json' -d '{\"key\":\"glm2api-admin\"}' 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

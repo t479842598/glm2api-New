@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "journalctl -u glm2api --no-pager -n 30\r"
+expect "# "
+send "exit\r"
+expect eof

@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 20
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+send "cd /opt/glm2api && cp .env /tmp/e.bak && git pull origin main 2>&1 | tail -2 && cp /tmp/e.bak .env && pip3 install -e . --break-system-packages -q 2>&1 | tail -1 && systemctl restart glm2api && sleep 2 && echo DEPLOYED\r"
+expect -timeout 15 "# "
+send "exit\r"
+expect eof

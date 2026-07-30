@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+set timeout 60
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+# Run deploy script in background
+send "nohup bash /tmp/deploy_fast.sh > /tmp/deploy.log 2>&1 &\r"
+expect "# "
+
+# Check if it's running
+send "sleep 2 && ps aux | grep deploy_fast | grep -v grep\r"
+expect "# "
+
+send "exit\r"
+expect eof

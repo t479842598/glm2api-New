@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+
+# Check what Python versions are available
+send "ls /usr/bin/python* /usr/local/bin/python* 2>/dev/null; echo '---'\r"
+expect "# "
+send "python3 --version 2>&1; python3.8 --version 2>&1; python3.12 --version 2>&1\r"
+expect "# "
+send "ls /opt/miniconda3/envs/glm2api/bin/python 2>/dev/null && echo 'conda exists'\r"
+expect "# "
+send "rpm -qa | grep python3 2>/dev/null | head -10\r"
+expect "# "
+
+# Check disk space and memory
+send "df -h /; free -m\r"
+expect "# "
+
+# Check if conda exists
+send "which conda 2>/dev/null || ls /opt/miniconda3/bin/conda 2>/dev/null || echo 'no conda'\r"
+expect "# "
+
+send "exit\r"
+expect eof

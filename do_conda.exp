@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+
+# Install conda
+send "cd /tmp && curl -sLO https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 2>&1 | tail -5\r"
+expect -timeout 120 "# "
+
+send "export PATH=/opt/miniconda3/bin:\$PATH && conda create -n glm2api python=3.12 -y 2>&1 | tail -10\r"
+expect -timeout 300 "# "
+
+send "/opt/miniconda3/envs/glm2api/bin/python --version\r"
+expect "# "
+
+send "exit\r"
+expect eof

@@ -1,0 +1,31 @@
+#!/usr/bin/expect -f
+set timeout 300
+
+# Upload code via SCP
+spawn scp -o StrictHostKeyChecking=no -r "./src" "./pyproject.toml" "./README.md" "./main.py" "./.env.example" "root@182.92.127.90:/opt/glm2api/"
+expect "password:"
+send "TANGlidong24ban!\r"
+expect eof
+
+# SSH and deploy
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+
+# Create Dockerfile
+send "cat > /opt/glm2api/Dockerfile << 'DOCKERFILE'\nFROM python:3.12-slim\nWORKDIR /app\nCOPY . .\nRUN pip install --no-cache-dir -e .\nEXPOSE 8000\nCMD [\"python\", \"-m\", \"glm2api\"]\nDOCKERFILE\r"
+expect "# "
+
+# Build and run
+send "cd /opt/glm2api && docker build -t glm2api . 2>&1 | tail -10\r"
+expect -timeout 180 "# "
+
+send "docker run -d --name glm2api -p 127.0.0.1:8000:8000 --restart unless-stopped -e HOST=0.0.0.0 -e GLM_USE_GUEST_REFRESH_TOKEN=true glm2api\r"
+expect "# "
+
+send "sleep 3 && docker ps | grep glm2api\r"
+expect "# "
+
+send "exit\r"
+expect eof

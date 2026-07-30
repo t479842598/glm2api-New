@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+send "kill -9 3416029 2>/dev/null; pkill -f deploy_fast.sh 2>/dev/null; echo 'killed'\r"
+expect "# "
+send "rm -rf /opt/miniconda3 2>/dev/null; rm -f /tmp/Miniconda* 2>/dev/null; echo 'cleaned'\r"
+expect "# "
+send "exit\r"
+expect eof

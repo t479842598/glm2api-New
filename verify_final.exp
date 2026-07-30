@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+send "echo START && systemctl is-active glm2api && ss -tlnp | grep 8001 && curl -s http://127.0.0.1:8001/health && curl -sk https://glm2api.274747.xyz/health --resolve glm2api.274747.xyz:443:127.0.0.1 2>&1 && echo DONE\r"
+expect "# "
+send "exit\r"
+expect eof

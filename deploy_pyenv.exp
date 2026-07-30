@@ -1,0 +1,31 @@
+#!/usr/bin/expect -f
+set timeout 600
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+# Install pyenv dependencies
+send "dnf install -y git gcc make patch zlib-devel bzip2-devel readline-devel sqlite-devel openssl-devel tk-devel libffi-devel xz-devel 2>/dev/null\r"
+expect -timeout 120 "# "
+
+# Install pyenv
+send "curl -fsSL https://pyenv.run | bash 2>&1 | tail -5\r"
+expect -timeout 120 "# "
+
+# Setup pyenv environment
+send "export PYENV_ROOT=\"\$HOME/.pyenv\" && export PATH=\"\$PYENV_ROOT/bin:\$PATH\" && eval \"\$(pyenv init -)\" && pyenv install 3.12.4 2>&1 | tail -5\r"
+expect -timeout 600 "# "
+
+send "pyenv global 3.12.4\r"
+expect "# "
+
+send "python --version\r"
+expect "# "
+
+send "exit\r"
+expect eof

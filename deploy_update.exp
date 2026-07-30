@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout 60
+
+spawn scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /tmp/glm2api-deploy/deploy_ubuntu_v2.sh root@23.95.78.148:/tmp/update.sh
+expect "password:"
+send "TANGlidong24ban\r"
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "cd /opt/glm2api && git remote update 2>/dev/null; git pull origin main 2>&1 | tail -5\r"
+expect -timeout 30 "# "
+
+send "pip3 install -e . -q 2>&1\r"
+expect -timeout 30 "# "
+
+send "bash /tmp/update.sh\r"
+expect -timeout 30 "# "
+
+send "exit\r"
+expect eof

@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+set timeout 15
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+# Test login directly to HTTP backend
+send "curl -s -D - -X POST http://127.0.0.1:8001/admin/api/login -H 'Content-Type: application/json' -d '{\"key\":\"glm2api-admin\"}' 2>&1\r"
+expect "# "
+
+# Test with wrong key
+send "echo '---WRONG---' && curl -s -D - -X POST http://127.0.0.1:8001/admin/api/login -H 'Content-Type: application/json' -d '{\"key\":\"wrong123\"}' 2>&1\r"
+expect "# "
+
+# Test overview with cookie
+send "echo '---SESSION---' && curl -s http://127.0.0.1:8001/admin/api/session -H 'Cookie: glm2api_admin_session=test' 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

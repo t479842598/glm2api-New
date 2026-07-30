@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "echo '=== 检查 /opt/glm2api ===' && ls -la /opt/glm2api/ 2>&1\r"
+expect "# "
+send "echo '=== systemd 服务 ===' && systemctl status glm2api 2>&1 | head -15\r"
+expect "# "
+send "echo '=== Nginx 配置 ===' && ls -la /etc/nginx/sites-enabled/ | grep glm 2>&1\r"
+expect "# "
+send "echo '=== Nginx SSL ===' && ls -la /etc/nginx/ssl/ 2>&1\r"
+expect "# "
+send "echo '=== 端口 8000 ===' && ss -tlnp | grep 8000 2>&1 || echo 'no 8000'\r"
+expect "# "
+send "echo '=== pip 包 ===' && pip3 list 2>/dev/null | grep -i glm 2>&1 || echo 'no glm pip'\r"
+expect "# "
+
+send "exit\r"
+expect eof

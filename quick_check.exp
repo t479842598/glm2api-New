@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+send "tail -30 /tmp/deploy.log\r"
+expect "# "
+send "python3.12 --version 2>/dev/null || /opt/miniconda3/bin/python --version 2>/dev/null || echo 'no python'\r"
+expect "# "
+send "systemctl is-active glm2api\r"
+expect "# "
+send "exit\r"
+expect eof

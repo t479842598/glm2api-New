@@ -1,0 +1,45 @@
+#!/usr/bin/expect -f
+set timeout 60
+
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "cd /opt/glm2api\r"
+expect "# "
+
+# Create venv and install
+send "python3 -m venv venv 2>&1 && echo 'venv created'\r"
+expect -timeout 30 "# "
+
+send "./venv/bin/pip install -e . 2>&1 | tail -5\r"
+expect -timeout 30 "# "
+
+# Check version
+send "./venv/bin/python -c 'from glm2api import __version__; print(\"glm2api version:\", __version__)' 2>&1\r"
+expect "# "
+
+# Update systemd to use venv
+send "APP_DIR=/opt/glm2api\r"
+expect "# "
+send "cat > /etc/systemd/system/glm2api.service << 'EOF'\n[Unit]\nDescription=glm2api - GLM to OpenAI API Proxy\nAfter=network.target\n\n[Service]\nType=simple\nWorkingDirectory=/opt/glm2api\nExecStart=/opt/glm2api/venv/bin/python -m glm2api\nRestart=on-failure\nRestartSec=5\n\n[Install]\nWantedBy=multi-user.target\nEOF\r"
+expect "# "
+
+send "systemctl daemon-reload && systemctl restart glm2api && sleep 3 && systemctl status glm2api --no-pager | head -10\r"
+expect "# "
+
+send "ss -tlnp | grep 8000\r"
+expect "# "
+
+send "echo '---CERT---' && ls -la /etc/nginx/ssl/ 2>&1\r"
+expect "# "
+
+send "echo '---NGINX---' && nginx -t 2>&1 && systemctl reload nginx\r"
+expect "# "
+
+send "curl -sk https://127.0.0.1/health 2>&1 || curl -s http://127.0.0.1:8000/health 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

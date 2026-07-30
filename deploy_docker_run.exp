@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn scp -o StrictHostKeyChecking=no "./deploy_docker.sh" "root@182.92.127.90:/tmp/deploy_docker.sh"
+expect "password:"
+send "TANGlidong24ban!\r"
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+send "chmod +x /tmp/deploy_docker.sh && bash /tmp/deploy_docker.sh\r"
+expect -timeout 300 "# "
+send "exit\r"
+expect eof

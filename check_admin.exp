@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set timeout 15
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+send "grep -i -E 'admin|ADMIN' /opt/glm2api/.env\r"
+expect "# "
+send "grep -i admin /opt/glm2api/.env.example 2>/dev/null\r"
+expect "# "
+send "cat /opt/glm2api/start.sh 2>/dev/null\r"
+expect "# "
+send "cat /opt/glm2api/.env.example | head -5\r"
+expect "# "
+send "exit\r"
+expect eof

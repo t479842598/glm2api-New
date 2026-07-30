@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+set timeout 120
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+# Install Python 3.12
+send "dnf install -y python3.12 python3.12-pip 2>/dev/null || yum install -y python3.12 python3.12-pip 2>/dev/null || (curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12) 2>/dev/null || echo 'Need manual Python install'\r"
+expect "# "
+
+# Check Python 3.12
+send "python3.12 --version 2>/dev/null || echo 'Python 3.12 not available'\r"
+expect "# "
+
+# Create deployment directory
+send "mkdir -p /opt/glm2api\r"
+expect "# "
+
+send "exit\r"
+expect eof

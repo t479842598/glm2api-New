@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "cat /opt/glm2api/.env\r"
+expect "# "
+send "cat /etc/nginx/sites-available/glm2api.conf\r"
+expect "# "
+send "ss -tlnp | grep -E '8000|8001'\r"
+expect "# "
+send "exit\r"
+expect eof

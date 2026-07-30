@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="porcelain-moss">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (() => {
+        const storageKey = "glm2api.admin.theme"
+        let mode = "system"
+        try {
+          mode = localStorage.getItem(storageKey) || "system"
+        } catch {
+          mode = "system"
+        }
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+        const theme =
+          mode === "tungsten-dark" || (mode === "system" && prefersDark)
+            ? "tungsten-dark"
+            : "porcelain-moss"
+        const root = document.documentElement
+        root.dataset.theme = theme
+        root.classList.toggle("dark", theme === "tungsten-dark")
+        root.style.colorScheme = theme === "tungsten-dark" ? "dark" : "light"
+      })()
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>glm2api 管理控制台</title>
+    <script type="module" crossorigin src="/assets/index-L0SIcdlR.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-QWAh-ZK6.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

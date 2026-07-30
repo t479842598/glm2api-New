@@ -1,0 +1,38 @@
+#!/usr/bin/expect -f
+set timeout 600
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+# Remove corrupted file and re-download
+send "cd /tmp && rm -rf Python-3.12* && curl -sO https://www.python.org/ftp/python/3.12.4/Python-3.12.4.tgz\r"
+expect -timeout 120 "# "
+
+# Verify download
+send "ls -la Python-3.12.4.tgz\r"
+expect "# "
+
+# Extract
+send "tar xzf Python-3.12.4.tgz\r"
+expect "# "
+
+# Configure and compile
+send "cd Python-3.12.4 && ./configure --prefix=/usr/local 2>&1 | tail -3\r"
+expect -timeout 180 "# "
+
+send "make -j2 2>&1 | tail -3\r"
+expect -timeout 600 "# "
+
+send "make altinstall 2>&1 | tail -3\r"
+expect -timeout 600 "# "
+
+send "python3.12 --version\r"
+expect "# "
+
+send "exit\r"
+expect eof

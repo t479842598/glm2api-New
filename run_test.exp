@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ./test_cookie.sh root@23.95.78.148:/tmp/test_cookie.sh
+expect "password:"
+send "TANGlidong24ban\r"
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+send "chmod +x /tmp/test_cookie.sh && bash /tmp/test_cookie.sh\r"
+expect "# "
+send "exit\r"
+expect eof

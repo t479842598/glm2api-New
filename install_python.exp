@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 120
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+send "dnf install -y epel-release 2>/dev/null\r"
+expect -timeout 60 "# "
+send "dnf install -y python39 python39-pip 2>/dev/null || dnf install -y python38 python38-pip 2>/dev/null || echo 'trying other methods'\r"
+expect -timeout 60 "# "
+send "python3.9 --version 2>/dev/null || python3.8 --version 2>/dev/null || echo 'no python3.8/3.9'\r"
+expect "# "
+send "exit\r"
+expect eof

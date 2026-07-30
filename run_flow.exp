@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "curl -s -X POST http://127.0.0.1:8001/admin/api/login -H Content-Type:application/json -d {\"key\":\"glm2api-admin\"} > /tmp/l.json\r"
+expect "# "
+
+send "python3 /tmp/extract_token.py\r"
+expect "# "
+send "exit\r"
+expect eof

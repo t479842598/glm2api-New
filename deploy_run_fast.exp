@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout 900
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn scp -o StrictHostKeyChecking=no "./deploy_fast.sh" "$user@$server:/tmp/deploy_fast.sh"
+expect {
+    "password:" {
+        send "$password\r"
+        expect eof
+    }
+}
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+send "chmod +x /tmp/deploy_fast.sh && bash /tmp/deploy_fast.sh\r"
+expect -timeout 900 "# "
+
+send "exit\r"
+expect eof

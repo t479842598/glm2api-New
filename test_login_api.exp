@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout 20
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "echo '=== Login test ===' && curl -sk -D /tmp/login_headers.txt -X POST https://glm2api.274747.xyz/admin/api/login -H 'Content-Type: application/json' -d '{\"key\":\"glm2api-admin\"}' 2>&1 | tail -1\r"
+expect "# "
+
+send "grep -i 'http\\|set-cookie' /tmp/login_headers.txt\r"
+expect "# "
+
+send "COOKIE=\$(grep -o 'glm2api_admin_session=[^;]*' /tmp/login_headers.txt) && echo 'cookie: '\$COOKIE && curl -sk -b \$COOKIE https://glm2api.274747.xyz/admin/api/overview 2>&1 | head -c 200\r"
+expect "# "
+
+send "exit\r"
+expect eof

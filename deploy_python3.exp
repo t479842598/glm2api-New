@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+set timeout 600
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+# Extract and compile Python 3.12
+send "cd /tmp && tar xzf Python-3.12.4.tgz && cd Python-3.12.4\r"
+expect "# "
+
+send "./configure --prefix=/usr/local --enable-optimizations 2>&1 | tail -5\r"
+expect -timeout 180 "# "
+
+send "make -j2 2>&1 | tail -5\r"
+expect -timeout 600 "# "
+
+send "make altinstall 2>&1 | tail -5\r"
+expect -timeout 600 "# "
+
+send "python3.12 --version\r"
+expect "# "
+
+send "python3.12 -m pip install --upgrade pip\r"
+expect -timeout 60 "# "
+
+send "exit\r"
+expect eof

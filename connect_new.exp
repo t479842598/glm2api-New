@@ -1,0 +1,47 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect {
+    "password:" {
+        send "TANGlidong24ban\r"
+        expect {
+            "# " {
+                send "echo CONNECTED_SUCCESS\r"
+                expect "# "
+                send "python3 --version 2>&1; nginx -v 2>&1\r"
+                expect "# "
+                send "exit\r"
+                expect eof
+            }
+            "password:" {
+                send "TANGlidong24ban!\r"
+                expect {
+                    "# " {
+                        send "echo CONNECTED_SUCCESS\r"
+                        expect "# "
+                        send "python3 --version 2>&1; nginx -v 2>&1\r"
+                        expect "# "
+                        send "exit\r"
+                        expect eof
+                    }
+                    timeout {
+                        puts "PASSWORD_REJECTED_ALL"
+                        exit 1
+                    }
+                }
+            }
+            timeout {
+                puts "TIMEOUT_AFTER_PASSWORD"
+                exit 1
+            }
+        }
+    }
+    "Permission denied" {
+        puts "PERMISSION_DENIED"
+        exit 1
+    }
+    timeout {
+        puts "CONNECTION_TIMEOUT"
+        exit 1
+    }
+}

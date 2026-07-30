@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+
+send "docker pull python:3.12-slim 2>&1 | tail -5\r"
+expect -timeout 120 "# "
+
+send "docker images | grep python\r"
+expect "# "
+
+send "exit\r"
+expect eof

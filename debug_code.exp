@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+set timeout 15
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+# Just sed the server.py check_admin function to debug
+send "cd /opt/glm2api && sed -n '370,410p' src/glm2api/admin.py\r"
+expect "# "
+
+send "exit\r"
+expect eof

@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout 15
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+send "curl -sk https://glm2api.274747.xyz/admin/api/session 2>&1\r"
+expect "# "
+send "curl -sk -D - https://glm2api.274747.xyz/admin/api/login -X POST -H 'Content-Type: application/json' -d '{\"key\":\"glm2api-admin\"}' 2>&1 | head -15\r"
+expect "# "
+send "exit\r"
+expect eof

@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+set timeout 30
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+# Check if deploy script is still running
+send "ps aux | grep deploy_fast | grep -v grep\r"
+expect "# "
+
+# Check deploy log
+send "tail -20 /tmp/deploy.log 2>/dev/null || echo 'No log yet'\r"
+expect "# "
+
+# Check Python installation
+send "python3.12 --version 2>/dev/null || /opt/miniconda3/bin/python --version 2>/dev/null || echo 'Python not ready'\r"
+expect "# "
+
+# Check if service is running
+send "systemctl is-active glm2api 2>/dev/null || echo 'Service not started'\r"
+expect "# "
+
+send "exit\r"
+expect eof

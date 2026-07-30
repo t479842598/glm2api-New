@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+# Clean old server
+spawn ssh -o StrictHostKeyChecking=no root@182.92.127.90
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+send "rm -rf /opt/glm2api /tmp/deploy* /tmp/Python-3.12* /tmp/Miniconda* /opt/miniconda3 2>/dev/null; docker stop glm2api 2>/dev/null; docker rm glm2api 2>/dev/null; rm -f /etc/nginx/conf.d/glm2api.conf /etc/systemd/system/glm2api.service 2>/dev/null; echo 'cleaned'\r"
+expect "# "
+send "exit\r"
+expect eof
+
+# Quick check new server
+spawn ssh -o StrictHostKeyChecking=no -p 22 root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban!\r"
+expect "# "
+send "echo '---PYTHON---' && python3 --version 2>&1; echo '---NGINX---' && nginx -v 2>&1; echo '---DISK---' && df -h / | tail -1; echo '---MEM---' && free -m | grep Mem; echo '---DONE---'\r"
+expect "# "
+send "exit\r"
+expect eof

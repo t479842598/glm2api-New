@@ -1,0 +1,38 @@
+#!/usr/bin/expect -f
+set timeout 60
+
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "cd /opt/glm2api\r"
+expect "# "
+
+# Save config, update code
+send "cp .env /tmp/env.bak && cp token.txt /tmp/token.bak 2>/dev/null; echo 'done'\r"
+expect "# "
+
+send "git stash 2>/dev/null; git pull origin main 2>&1 | tail -5\r"
+expect -timeout 30 "# "
+
+send "cp /tmp/env.bak .env && cp /tmp/token.bak token.txt 2>/dev/null; rm -f /tmp/env.bak /tmp/token.bak; echo 'config restored'\r"
+expect "# "
+
+# Install deps (Ubuntu 24.04 needs --break-system-packages)
+send "pip3 install -e . --break-system-packages -q 2>&1 | tail -3\r"
+expect -timeout 30 "# "
+
+send "systemctl restart glm2api && sleep 3\r"
+expect "# "
+
+# Verify
+send "echo 'STATUS:' && systemctl is-active glm2api\r"
+expect "# "
+send "curl -s http://127.0.0.1:8000/health 2>&1\r"
+expect "# "
+send "curl -s http://127.0.0.1:8000/v1/models 2>&1 | head -c 200\r"
+expect "# "
+
+send "exit\r"
+expect eof

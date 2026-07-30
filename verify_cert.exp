@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+# Check auto-renew timer
+send "systemctl list-timers | grep -i certbot 2>/dev/null || echo 'no timer'\r"
+expect "# "
+send "certbot renew --dry-run 2>&1 | tail -10\r"
+expect -timeout 30 "# "
+
+# Test API
+send "curl -s https://glm2api.274747.xyz/v1/models 2>&1 | head -c 200\r"
+expect "# "
+
+send "echo DONE\r"
+expect "# "
+send "exit\r"
+expect eof

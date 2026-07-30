@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+set timeout 30
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+# Check if deploy script is still running
+send "ps aux | grep deploy.sh | grep -v grep\r"
+expect "# "
+
+# Check Python installation status
+send "python3.12 --version 2>/dev/null || echo 'Python not installed yet'\r"
+expect "# "
+
+# Check if Python source is being compiled
+send "ps aux | grep make | grep -v grep | head -3\r"
+expect "# "
+
+# Check disk space
+send "df -h /tmp\r"
+expect "# "
+
+send "exit\r"
+expect eof

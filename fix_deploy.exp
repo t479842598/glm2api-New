@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+send "cd /opt/glm2api && cp .env /tmp/env.bak && git pull origin main 2>&1 | tail -3\r"
+expect -timeout 30 "# "
+
+send "cp /tmp/env.bak .env && rm -f /tmp/env.bak\r"
+expect "# "
+
+send "pip3 install -e . --break-system-packages -q 2>&1 | tail -3\r"
+expect -timeout 30 "# "
+
+send "systemctl restart glm2api && sleep 3 && systemctl is-active glm2api\r"
+expect "# "
+
+# Test login and cookie
+send "curl -sk -D - https://glm2api.274747.xyz/admin/api/session 2>&1 | head -10\r"
+expect "# "
+
+send "echo DONE\r"
+expect "# "
+send "exit\r"
+expect eof

@@ -1,0 +1,35 @@
+#!/usr/bin/expect -f
+set timeout 300
+set server "182.92.127.90"
+set user "root"
+set password "TANGlidong24ban!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$server
+expect "password:"
+send "$password\r"
+expect "# "
+
+# Install build dependencies
+send "dnf install -y gcc make zlib-devel bzip2-devel readline-devel sqlite-devel openssl-devel tk-devel libffi-devel xz-devel 2>/dev/null || yum install -y gcc make zlib-devel bzip2-devel readline-devel sqlite-devel openssl-devel tk-devel libffi-devel xz-devel\r"
+expect -timeout 120 "# "
+
+# Download and install Python 3.12
+send "cd /tmp && curl -sO https://www.python.org/ftp/python/3.12.4/Python-3.12.4.tgz && tar xzf Python-3.12.4.tgz && cd Python-3.12.4 && ./configure --prefix=/usr/local --enable-optimizations --with-lto 2>&1 | tail -5\r"
+expect -timeout 120 "# "
+
+send "make -j$(nproc) 2>&1 | tail -5\r"
+expect -timeout 180 "# "
+
+send "make altinstall 2>&1 | tail -5\r"
+expect -timeout 180 "# "
+
+# Verify Python 3.12
+send "python3.12 --version\r"
+expect "# "
+
+# Install pip for Python 3.12
+send "python3.12 -m pip install --upgrade pip 2>&1 | tail -3\r"
+expect -timeout 60 "# "
+
+send "exit\r"
+expect eof

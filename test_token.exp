@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+set timeout 20
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@23.95.78.148
+expect "password:"
+send "TANGlidong24ban\r"
+expect "# "
+
+# Check if _session_token is in the response
+send "curl -s -X POST http://127.0.0.1:8001/admin/api/login -H 'Content-Type: application/json' -d '{\"key\":\"glm2api-admin\"}' 2>&1 | python3 -c 'import sys,json; d=json.load(sys.stdin); print(\"_session_token:\", d.get(\"data\",{}).get(\"_session_token\",\"MISSING\"))'\r"
+expect "# "
+
+# Check if x-admin-session is recognized
+send "TOKEN=\$(curl -s -X POST http://127.0.0.1:8001/admin/api/login -H 'Content-Type: application/json' -d '{\"key\":\"glm2api-admin\"}' 2>&1 | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\"data\",{}).get(\"_session_token\",\"\"))' 2>/dev/null)\r"
+expect "# "
+send "echo \"TOKEN=\$TOKEN\"\r"
+expect "# "
+send "curl -s -H 'x-admin-session: '\$TOKEN http://127.0.0.1:8001/admin/api/overview 2>&1 | head -c 200\r"
+expect "# "
+
+# Direct header test
+send "curl -s -D - http://127.0.0.1:8001/admin/api/session 2>&1 | head -5\r"
+expect "# "
+
+send "exit\r"
+expect eof
