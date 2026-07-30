@@ -6,6 +6,7 @@ import tailwindcss from "@tailwindcss/vite"
 // 构建产物输出到 src/glm2api/admin_web，由 Python 服务器作为静态资源提供。
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: "/admin/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

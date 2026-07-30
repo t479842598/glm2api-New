@@ -634,7 +634,7 @@ def handle_admin_stats(handler) -> None:
 
     # 运行时间
     import time as _time
-    uptime_sec = int(_time.time() - handler._admin_start_time) if hasattr(handler._admin, '_start_time') else 0
+    uptime_sec = int(_time.time() - handler._admin_start_time) if hasattr(handler, '_admin_start_time') and handler._admin_start_time else 0
     hours, remainder = divmod(uptime_sec, 3600)
     minutes, seconds = divmod(remainder, 60)
     uptime_str = f"{hours}h {minutes}m {seconds}s"

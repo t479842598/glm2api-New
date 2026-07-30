@@ -32,7 +32,7 @@ from .admin import (
     handle_admin_logs,
     handle_admin_overview,
     handle_admin_page,
-    handle_admin_request_detail,
+
     handle_admin_request_log_detail,
     handle_admin_request_logs,
     handle_admin_request_logs_clear,
