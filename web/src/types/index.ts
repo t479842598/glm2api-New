@@ -201,10 +201,10 @@ export interface LogDetailData {
 
 export interface AppLogEntry {
   id: number
-  timestamp: string
+  time: string
   level: string
-  name: string
-  message: string
+  logger: string
+  msg: string
 }
 
 export interface AppLogsPage {

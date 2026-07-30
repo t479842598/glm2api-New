@@ -139,7 +139,7 @@ export default function AppLogsPage() {
                       className="border-b border-border/60 last:border-0 hover:bg-muted/30"
                     >
                       <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground">
-                        {log.timestamp}
+                        {log.time.slice(0, 8)}
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap">
                         <span className={LEVEL_COLORS[log.level] || ""}>
@@ -147,10 +147,10 @@ export default function AppLogsPage() {
                         </span>
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground/60">
-                        {log.name || "-"}
+                        {log.logger || "-"}
                       </td>
                       <td className="px-2 py-1.5 whitespace-pre-wrap break-all text-foreground">
-                        {log.message}
+                        {log.msg}
                       </td>
                     </tr>
                   ))}

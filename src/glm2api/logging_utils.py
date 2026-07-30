@@ -179,9 +179,11 @@ class _MemoryLogHandler(logging.Handler):
         global _log_counter
         with _buffer_lock:
             _log_counter += 1
+            _time_str = self.formatter.formatTime(record, _DATE_FMT) if self.formatter else time.strftime(_DATE_FMT)
             _buffered_logs.append({
                 "id": _log_counter,
-                "time": self.format(record),
+                "time": _time_str,
+                "full": self.format(record),
                 "level": record.levelname,
                 "logger": record.name.replace("glm2api.", ""),
                 "msg": record.getMessage(),
