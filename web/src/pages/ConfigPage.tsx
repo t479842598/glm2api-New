@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PaginationControls } from "@/components/shared/PaginationControls"
 import {
   Settings2,
   Database,
@@ -59,6 +60,8 @@ export default function ConfigPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [tokenPage, setTokenPage] = useState(1)
+  const TOKENS_PAGE_SIZE = 10
 
   const fetchConfig = useCallback(async () => {
     try {
@@ -88,6 +91,17 @@ export default function ConfigPage() {
       toast.error("复制失败")
     }
   }
+
+  // 账号列表分页
+  const tokens = config?.tokens ?? []
+  const tokenPageCount = Math.max(Math.ceil(tokens.length / TOKENS_PAGE_SIZE), 1)
+  const validTokenPage = Math.min(Math.max(tokenPage, 1), tokenPageCount)
+  const tokenStart = (validTokenPage - 1) * TOKENS_PAGE_SIZE
+  const paginatedTokens = tokens.slice(tokenStart, tokenStart + TOKENS_PAGE_SIZE)
+
+  useEffect(() => {
+    setTokenPage((p) => Math.min(Math.max(p, 1), tokenPageCount))
+  }, [tokenPageCount])
 
   return (
     <div className="mx-auto w-full max-w-[1320px] space-y-5">
@@ -252,13 +266,14 @@ export default function ConfigPage() {
               <Separator className="my-4" />
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">账号列表</p>
-                {config.tokens.length === 0 ? (
+                {tokens.length === 0 ? (
                   <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
                     暂无账号
                   </div>
                 ) : (
+                  <>
                   <div className="rounded-lg border border-border/60 bg-card p-2">
-                    {config.tokens.map((token, idx) => (
+                    {paginatedTokens.map((token, idx) => (
                       <div
                         key={idx}
                         className="flex items-center justify-between gap-3 px-2 py-2 first:pt-1 last:pb-1 hover:bg-muted/30 rounded"
@@ -298,6 +313,15 @@ export default function ConfigPage() {
                       </div>
                     ))}
                   </div>
+                  <PaginationControls
+                    page={validTokenPage}
+                    pageCount={tokenPageCount}
+                    total={tokens.length}
+                    startIndex={tokens.length === 0 ? 0 : tokenStart + 1}
+                    endIndex={Math.min(tokenStart + TOKENS_PAGE_SIZE, tokens.length)}
+                    onPageChange={setTokenPage}
+                  />
+                  </>
                 )}
               </div>
             </>
