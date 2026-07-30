@@ -179,6 +179,38 @@ def _serve_admin_web_static(handler, path: str) -> None:
     handler.wfile.write(body)
 
 
+def _serve_admin_web_root_file(handler, path: str) -> bool:
+    """尝试从 admin_web 根目录提供静态文件（如 logo.svg, favicon.svg）。
+    若文件存在则返回 True，否则返回 False。"""
+    from pathlib import Path
+
+    # /admin/logo-light.svg → admin_web/logo-light.svg
+    filename = path.removeprefix("/admin/")
+    web_dir = Path(__file__).parent / "admin_web"
+    file_path = web_dir / filename
+
+    try:
+        file_path = file_path.resolve(strict=False)
+    except (ValueError, OSError):
+        return False
+    if not str(file_path).startswith(str(web_dir.resolve())):
+        return False
+    if not file_path.is_file():
+        return False
+
+    suffix = file_path.suffix.lower()
+    content_type = _STATIC_MIME.get(suffix, "application/octet-stream")
+    body = file_path.read_bytes()
+
+    handler.send_response(200)
+    handler.send_header("Content-Type", content_type)
+    handler.send_header("Content-Length", str(len(body)))
+    handler.send_header("Cache-Control", "public, max-age=3600")
+    handler.end_headers()
+    handler.wfile.write(body)
+    return True
+
+
 class GLM2APIServer:
     def __init__(self, config: AppConfig, glm_client: GLMWebClient, logger: Logger) -> None:
         self.config = config
@@ -236,6 +268,11 @@ class GLM2APIServer:
                     if path == "/health":
                         self._write_json(HTTPStatus.OK, {"status": "ok"})
                         _record_request(request_store, request_detail_store, method="GET", path="/health", status=200, duration_ms=(time.time() - _start) * 1000)
+                        return
+
+                    # 静默处理浏览器 DevTools 探测请求，不记录日志。
+                    if path.startswith("/.well-known/"):
+                        self._write_json(HTTPStatus.OK, {})
                         return
 
                     if path == f"{config.api_prefix}/models":
@@ -308,8 +345,12 @@ class GLM2APIServer:
                         handle_admin_api_keys_list(self)
                         return
 
-                    # SPA 路由：所有 /admin/* 路径（非 API、非静态）返回 index.html
+                    # SPA 路由：所有 /admin/* 路径（非 API、非静态）先检查是否有文件
                     if path.startswith("/admin/") and not path.startswith("/admin/api/"):
+                        # 尝试作为 admin_web 目录下的静态文件提供
+                        if _serve_admin_web_root_file(self, path):
+                            return
+                        # 否则返回 index.html 让前端路由处理
                         handle_admin_page(self)
                         return
 

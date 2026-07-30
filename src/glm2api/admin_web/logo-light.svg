@@ -1,0 +1,15 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lg-light" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4ade80"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <!-- 圆角方形背景 -->
+  <rect x="4" y="4" width="56" height="56" rx="12" ry="12" fill="var(--logo-background)"/>
+  <!-- G 字母 -->
+  <path d="M20 22c0-4.4 3.6-8 8-8h8c4.4 0 8 3.6 8 8v4h-4v-4c0-2.2-1.8-4-4-4h-8c-2.2 0-4 1.8-4 4v20c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4v-6h-6v-4h10v10c0 4.4-3.6 8-8 8h-8c-4.4 0-8-3.6-8-8V22z"
+        fill="url(#lg-light)"/>
+  <!-- 右侧竖线，形成 GLM 的 "L" 暗示 -->
+  <rect x="40" y="22" width="4" height="20" rx="2" fill="var(--logo-start)"/>
+</svg>

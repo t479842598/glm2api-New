@@ -15,7 +15,6 @@ import type {
   LogDetailData,
   LogFilters,
   LogsPage,
-  LoginResult,
   SessionInfo,
 } from "@/types"
 
@@ -136,11 +135,14 @@ export const api = {
   session: () => request<SessionInfo>("/session"),
 
   login: (key: string) =>
-    post<LoginResult>("/login", { key }).then((result) => {
-      if (result.session_token) {
-        writeSessionToken(result.session_token)
+    // 后端返回 `{ code:0, msg:"ok", data:{..., _session_token:"..."} }`
+    // post 解包后返回 data 对象，包含 _session_token 和 config 等字段。
+    post<Record<string, unknown>>("/login", { key }).then((result) => {
+      const token = result._session_token as string | undefined
+      if (token) {
+        writeSessionToken(token)
       }
-      return result
+      return { authenticated: !!token, session_token: token }
     }),
 
   logout: () =>
