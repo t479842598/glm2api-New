@@ -27,6 +27,7 @@ from .admin import (
     handle_admin_app_logs,
     handle_admin_chat_test,
     handle_admin_config,
+    handle_admin_env,
     handle_admin_login,
     handle_admin_logout,
     handle_admin_logs,
@@ -40,6 +41,7 @@ from .admin import (
     handle_admin_requests_clear,
     handle_admin_session,
     handle_admin_stats,
+    handle_admin_update_settings,
 )
 from .services.anthropic_adapter import (
     AnthropicStreamAccumulator,
@@ -345,6 +347,10 @@ class GLM2APIServer:
                         handle_admin_api_keys_list(self)
                         return
 
+                    if path == "/admin/api/env":
+                        handle_admin_env(self)
+                        return
+
                     # SPA 路由：所有 /admin/* 路径（非 API、非静态）先检查是否有文件
                     if path.startswith("/admin/") and not path.startswith("/admin/api/"):
                         # 尝试作为 admin_web 目录下的静态文件提供
@@ -412,6 +418,11 @@ class GLM2APIServer:
                     if path == "/admin/api/api-keys":
                         handle_admin_api_key_create(self)
                         return
+
+                    if path == "/admin/api/settings":
+                        handle_admin_update_settings(self)
+                        return
+
                     if path not in {
                         f"{config.api_prefix}/chat/completions",
                         f"{config.api_prefix}/images/generations",

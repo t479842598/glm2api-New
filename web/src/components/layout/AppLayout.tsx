@@ -7,6 +7,8 @@ import {
   ScrollText,
   MessageSquare,
   Database,
+  Server,
+  ShieldCheck,
   LogOut,
   ChevronDown,
   User,
@@ -30,6 +32,8 @@ const navItems = [
   { to: "/admin/logs", label: "请求日志", icon: ClipboardList },
   { to: "/admin/app-logs", label: "应用日志", icon: ScrollText },
   { to: "/admin/chat-test", label: "对话测试", icon: MessageSquare },
+  { to: "/admin/env", label: "环境配置", icon: Server },
+  { to: "/admin/settings", label: "系统设置", icon: ShieldCheck },
 ]
 
 const pageTitles: Record<string, string> = {
@@ -40,6 +44,8 @@ const pageTitles: Record<string, string> = {
   "/admin/logs": "请求日志",
   "/admin/app-logs": "应用日志",
   "/admin/chat-test": "对话测试",
+  "/admin/settings": "系统设置",
+  "/admin/env": "环境配置",
 }
 
 function GitHubMark(props: SVGProps<SVGSVGElement>) {
@@ -258,7 +264,7 @@ export default function AppLayout() {
         aria-label="移动端导航"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] backdrop-blur md:hidden"
       >
-        <div className="grid grid-cols-6 gap-1">
+        <div className="grid grid-cols-5 gap-1 overflow-x-auto">
           {navItems.map((item) => (
             <NavLink
               key={item.to}

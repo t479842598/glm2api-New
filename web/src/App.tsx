@@ -9,6 +9,8 @@ import LogsPage from "@/pages/LogsPage"
 import LogDetailPage from "@/pages/LogDetailPage"
 import AppLogsPage from "@/pages/AppLogsPage"
 import ChatTestPage from "@/pages/ChatTestPage"
+import SettingsPage from "@/pages/SettingsPage"
+import EnvPage from "@/pages/EnvPage"
 
 function NotFoundPage() {
   return (
@@ -37,6 +39,8 @@ const router = createBrowserRouter([
       { path: "logs/:requestId", element: <LogDetailPage /> },
       { path: "app-logs", element: <AppLogsPage /> },
       { path: "chat-test", element: <ChatTestPage /> },
+      { path: "settings", element: <SettingsPage /> },
+      { path: "env", element: <EnvPage /> },
     ],
   },
   { path: "*", element: <NotFoundPage /> },

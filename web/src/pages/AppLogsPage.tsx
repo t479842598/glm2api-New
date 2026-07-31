@@ -11,7 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { RefreshCwIcon, ScrollText, ArrowDownWideNarrow } from "lucide-react"
+import { RefreshCwIcon, ScrollText, ArrowDownWideNarrow, CopyIcon } from "lucide-react"
+
+import { toast } from "sonner"
 
 const LEVEL_COLORS: Record<string, string> = {
   DEBUG: "text-[#64b5f6]",
@@ -172,7 +174,7 @@ export default function AppLogsPage() {
                   {reversedLogs.map((log) => (
                     <tr
                       key={log.id}
-                      className="border-b border-border/60 last:border-0 hover:bg-muted/30"
+                      className="border-b border-border/60 last:border-0 hover:bg-muted/30 group"
                     >
                       <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground">
                         {log.time}
@@ -185,8 +187,21 @@ export default function AppLogsPage() {
                       <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground/60">
                         {log.logger || "-"}
                       </td>
-                      <td className="px-2 py-1.5 whitespace-pre-wrap break-all text-foreground">
-                        {log.msg}
+                      <td className="px-2 py-1.5 whitespace-pre-wrap break-all text-foreground pr-8">
+                        <span className="relative">
+                          {log.msg}
+                          <button
+                            type="button"
+                            className="absolute -right-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity rounded p-0.5 hover:bg-muted"
+                            onClick={() => {
+                              navigator.clipboard.writeText(log.msg)
+                              toast.success("已复制日志内容")
+                            }}
+                            title="复制"
+                          >
+                            <CopyIcon className="size-3" />
+                          </button>
+                        </span>
                       </td>
                     </tr>
                   ))}

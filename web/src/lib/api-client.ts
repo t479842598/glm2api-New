@@ -210,4 +210,11 @@ export const api = {
       "/chat-test",
       { model, prompt },
     ),
+
+  // ── 设置 ──────────────────────────────────────────────────────────
+  updateSettings: (adminKey: string) =>
+    post<{ admin_key_masked: string; updated: boolean }>("/settings", { admin_key: adminKey }),
+
+  // ── 环境变量 ──────────────────────────────────────────────────────
+  env: () => request<{ environment: string; path: string; exists: boolean; content: string; editable: boolean; message: string }>("/env"),
 }

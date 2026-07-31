@@ -931,3 +931,58 @@ def handle_admin_app_logs(handler) -> None:
         "items": get_buffered_logs(since_id=since_id, limit=limit, level=level),
         "limit": limit,
     }))
+
+
+# ── 设置：修改管理员密码 ─────────────────────────────────────────────────
+
+def handle_admin_update_settings(handler) -> None:
+    if not _check_admin(handler):
+        _write_admin_json(handler, _api_err("Login required"), HTTPStatus.UNAUTHORIZED)
+        return
+    body = _read_admin_body(handler)
+    new_key = str(body.get("admin_key") or "").strip()
+    if not new_key or len(new_key) < 4:
+        _write_admin_json(handler, _api_err("管理员密钥至少需要 4 个字符"), HTTPStatus.BAD_REQUEST)
+        return
+    config: AppConfig = handler._admin_config
+    config.admin_key = new_key
+    try:
+        _write_env_file("ADMIN_KEY", new_key)
+    except Exception as exc:
+        _write_admin_json(handler, _api_err(f"写入 .env 失败: {exc}"), HTTPStatus.INTERNAL_SERVER_ERROR)
+        return
+    _write_admin_json(handler, _api_ok({"admin_key_masked": _mask(new_key), "updated": True}, "管理员密钥已更新"))
+
+
+# ── 环境变量查看 ─────────────────────────────────────────────────────────
+
+def handle_admin_env(handler) -> None:
+    if not _check_admin(handler):
+        _write_admin_json(handler, _api_err("Login required"), HTTPStatus.UNAUTHORIZED)
+        return
+    from pathlib import Path
+    env_path = Path(".env")
+    exists = env_path.exists()
+    content = ""
+    if exists:
+        raw = env_path.read_text(encoding="utf-8")
+        lines = []
+        for line in raw.splitlines():
+            if "=" in line and not line.strip().startswith("#"):
+                key, val = line.split("=", 1)
+                sensitive = any(k in key.upper() for k in ("KEY", "TOKEN", "SECRET", "ADMIN"))
+                if sensitive and val.strip():
+                    lines.append(f"{key}={_mask(val.strip(), keep=6)}")
+                else:
+                    lines.append(line)
+            else:
+                lines.append(line)
+        content = "\n".join(lines)
+    _write_admin_json(handler, _api_ok({
+        "environment": "local",
+        "path": str(env_path.absolute()),
+        "exists": exists,
+        "content": content,
+        "editable": False,
+        "message": "敏感值已脱敏显示",
+    }))

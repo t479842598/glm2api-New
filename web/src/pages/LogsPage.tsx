@@ -28,12 +28,15 @@ import {
   SearchIcon,
   RotateCcwIcon,
   RefreshCwIcon,
+  CopyIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
   FileTextIcon,
 } from "lucide-react"
+
+import { toast } from "sonner"
 
 const statusFilterLabels: Record<string, string> = {
   success: "成功",
@@ -124,8 +127,20 @@ function LogMobileCard({
       </div>
 
       {log.error_message && (
-        <div className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
+        <div className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-[11px] text-destructive relative group">
           {log.error_message}
+          <button
+            type="button"
+            className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity rounded p-0.5 hover:bg-destructive/20"
+            onClick={(e) => {
+              e.stopPropagation()
+              navigator.clipboard.writeText(log.error_message || "")
+              toast.success("已复制错误信息")
+            }}
+            title="复制错误信息"
+          >
+            <CopyIcon className="size-3" />
+          </button>
         </div>
       )}
 
@@ -330,6 +345,22 @@ export default function LogsPage() {
             <RefreshCwIcon className={autoRefresh ? "mr-1 size-3 animate-spin" : "mr-1 size-3"} />
             {autoRefresh ? "自动刷新中" : "自动刷新"}
           </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-10 text-xs md:h-7"
+            onClick={() => {
+              const text = logs.map(l =>
+                `${l.time_str} ${l.method} ${l.path} | ${l.status_code} | ${l.model || "-"} | ${l.duration_display} | ${l.api_key_name || "-"} | ${l.error_message || "-"}`
+              ).join("\n")
+              navigator.clipboard.writeText(text)
+              toast.success(`已复制 ${logs.length} 条日志`)
+            }}
+            disabled={logs.length === 0}
+            title="复制当前页日志"
+          >
+            <CopyIcon className="size-3" />
+          </Button>
         </div>
       </div>
 
@@ -416,11 +447,24 @@ export default function LogsPage() {
                     {log.glm_account || "-"}
                   </TableCell>
                   <TableCell>
-                    <div className="truncate text-xs">
+                    <div className="truncate text-xs relative group">
                       <span className="font-medium text-muted-foreground">
                         {log.method}
                       </span>{" "}
                       {log.path}
+                      <button
+                        type="button"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity rounded p-0.5 hover:bg-muted"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const info = `${log.method} ${log.path}\nModel: ${log.model || "-"}\nStatus: ${log.status_code}\nKey: ${log.api_key_name || "-"}\nGLM: ${log.glm_account || "-"}\nTime: ${log.time_str}\nDuration: ${log.duration_display}`
+                          navigator.clipboard.writeText(info)
+                          toast.success("已复制请求信息")
+                        }}
+                        title="复制"
+                      >
+                        <CopyIcon className="size-3" />
+                      </button>
                     </div>
                     {log.error_message && (
                       <div className="mt-0.5 text-[11px] text-destructive truncate max-w-48">
