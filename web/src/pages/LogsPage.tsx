@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { api } from "@/lib/api-client"
 import type { LogEntry, LogsPage } from "@/types"
@@ -27,6 +27,7 @@ import {
 import {
   SearchIcon,
   RotateCcwIcon,
+  RefreshCwIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeftIcon,
@@ -174,6 +175,9 @@ export default function LogsPage() {
   )
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [autoRefresh, setAutoRefresh] = useState(true)
+  const autoRefreshRef = useRef(autoRefresh)
+  autoRefreshRef.current = autoRefresh
 
   const q = searchParams.get("q") ?? ""
   const status = searchParams.get("status") ?? ""
@@ -208,6 +212,17 @@ export default function LogsPage() {
   useEffect(() => {
     fetchLogs()
   }, [fetchLogs])
+
+  // 自动刷新（默认开启，每 5 秒轮询）
+  useEffect(() => {
+    if (!autoRefresh) return
+    const timer = setInterval(() => {
+      if (autoRefreshRef.current) {
+        fetchLogs()
+      }
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [autoRefresh, fetchLogs])
 
   const updateFilter = (name: string, value: string) => {
     setSearchParams((prev) => {
@@ -305,6 +320,15 @@ export default function LogsPage() {
           <Button size="sm" variant="outline" className="h-10 text-xs md:h-7" onClick={handleClear}>
             <RotateCcwIcon className="mr-1 size-3" />
             清空
+          </Button>
+          <Button
+            size="sm"
+            variant={autoRefresh ? "default" : "outline"}
+            className="h-10 text-xs md:h-7"
+            onClick={() => setAutoRefresh(!autoRefresh)}
+          >
+            <RefreshCwIcon className={autoRefresh ? "mr-1 size-3 animate-spin" : "mr-1 size-3"} />
+            {autoRefresh ? "自动刷新中" : "自动刷新"}
           </Button>
         </div>
       </div>

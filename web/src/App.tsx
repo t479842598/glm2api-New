@@ -3,6 +3,7 @@ import AppLayout from "@/components/layout/AppLayout"
 import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
 import ConfigPage from "@/pages/ConfigPage"
+import TokenPage from "@/pages/TokenPage"
 import KeysPage from "@/pages/KeysPage"
 import LogsPage from "@/pages/LogsPage"
 import LogDetailPage from "@/pages/LogDetailPage"
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/admin/dashboard" replace /> },
       { path: "dashboard", element: <DashboardPage /> },
       { path: "config", element: <ConfigPage /> },
+      { path: "token", element: <TokenPage /> },
       { path: "keys", element: <KeysPage /> },
       { path: "logs", element: <LogsPage /> },
       { path: "logs/:requestId", element: <LogDetailPage /> },

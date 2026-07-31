@@ -6,6 +6,7 @@ import {
   ClipboardList,
   ScrollText,
   MessageSquare,
+  Database,
   LogOut,
   ChevronDown,
   User,
@@ -24,6 +25,7 @@ const GITHUB_REPO_URL = "https://github.com/t479842598/glm2api-manage"
 const navItems = [
   { to: "/admin/dashboard", label: "概览", icon: LayoutDashboard },
   { to: "/admin/config", label: "配置与 Token", icon: Settings2 },
+  { to: "/admin/token", label: "账号管理", icon: Database },
   { to: "/admin/keys", label: "API Keys", icon: Key },
   { to: "/admin/logs", label: "请求日志", icon: ClipboardList },
   { to: "/admin/app-logs", label: "应用日志", icon: ScrollText },
@@ -33,6 +35,7 @@ const navItems = [
 const pageTitles: Record<string, string> = {
   "/admin/dashboard": "概览",
   "/admin/config": "配置与 Token",
+  "/admin/token": "账号管理",
   "/admin/keys": "API Keys",
   "/admin/logs": "请求日志",
   "/admin/app-logs": "应用日志",
