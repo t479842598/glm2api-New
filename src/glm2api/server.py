@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 from .config import AppConfig
 from .logging_utils import debug_dump
+from . import __version__
 from .admin import (
     ApiKeyStore,
     RequestLogStore,
@@ -120,7 +121,7 @@ def _serve_admin_static(handler, path: str) -> None:
         handler.send_response(404)
         handler.end_headers()
         return
-    if not str(file_path).startswith(str(lib_dir.resolve())):
+    if not file_path.is_relative_to(lib_dir.resolve()):
         handler.send_response(403)
         handler.end_headers()
         return
@@ -158,7 +159,7 @@ def _serve_admin_web_static(handler, path: str) -> None:
         handler.send_response(404)
         handler.end_headers()
         return
-    if not str(file_path).startswith(str(web_dir.resolve())):
+    if not file_path.is_relative_to(web_dir.resolve()):
         handler.send_response(403)
         handler.end_headers()
         return
@@ -195,7 +196,7 @@ def _serve_admin_web_root_file(handler, path: str) -> bool:
         file_path = file_path.resolve(strict=False)
     except (ValueError, OSError):
         return False
-    if not str(file_path).startswith(str(web_dir.resolve())):
+    if not file_path.is_relative_to(web_dir.resolve()):
         return False
     if not file_path.is_file():
         return False
@@ -246,7 +247,7 @@ class GLM2APIServer:
         start_time = time.time()
 
         class RequestHandler(BaseHTTPRequestHandler):
-            server_version = "glm2api/0.4.0"
+            server_version = f"glm2api/{__version__}"
             protocol_version = "HTTP/1.1"
 
             # Admin integration attributes
@@ -560,6 +561,7 @@ class GLM2APIServer:
             def _handle_anthropic_messages(self, payload: dict[str, object]) -> None:
                 model = str(payload.get("model", "glm-4"))
                 openai_payload = anthropic_to_openai(payload)
+                start_time = time.time()
 
                 if payload.get("stream"):
                     self._stream_anthropic(openai_payload, model)
@@ -568,11 +570,18 @@ class GLM2APIServer:
                 result, _ = glm_client.chat_completion(openai_payload)
                 response = openai_to_anthropic_response(result, model)
                 self._write_json(HTTPStatus.OK, response)
+                _record_request(request_store, request_detail_store,
+                    method="POST", path=self._path_without_query(), model=model,
+                    status=200, duration_ms=(time.time() - start_time) * 1000,
+                    client_ip=self.client_address[0],
+                    user_agent=self.headers.get("User-Agent", ""),
+                )
 
             def _stream_anthropic(self, openai_payload: dict[str, object], model: str) -> None:
                 openai_payload["stream"] = True
                 stream_iter = glm_client.stream_chat_completion(openai_payload)
                 accumulator = AnthropicStreamAccumulator(model=model)
+                stream_start = time.time()
 
                 self.send_response(HTTPStatus.OK)
                 self._send_common_headers()
@@ -608,6 +617,13 @@ class GLM2APIServer:
                     except _CLIENT_DISCONNECTED:
                         pass
 
+                _record_request(request_store, request_detail_store,
+                    method="POST", path=self._path_without_query(), model=model,
+                    status=200, duration_ms=(time.time() - stream_start) * 1000,
+                    client_ip=self.client_address[0],
+                    user_agent=self.headers.get("User-Agent", ""),
+                    is_stream=True,
+                )
                 logger.info("Anthropic 流式请求完成 model=%s", model)
 
             # ---- OpenAI Responses API ----
@@ -615,6 +631,7 @@ class GLM2APIServer:
             def _handle_responses(self, payload: dict[str, object]) -> None:
                 model = str(payload.get("model", "glm-4"))
                 openai_payload = responses_to_openai(payload)
+                start_time = time.time()
 
                 if payload.get("stream"):
                     self._stream_responses(openai_payload, model)
@@ -623,11 +640,18 @@ class GLM2APIServer:
                 result, _ = glm_client.chat_completion(openai_payload)
                 response = openai_to_responses(result, model)
                 self._write_json(HTTPStatus.OK, response)
+                _record_request(request_store, request_detail_store,
+                    method="POST", path=self._path_without_query(), model=model,
+                    status=200, duration_ms=(time.time() - start_time) * 1000,
+                    client_ip=self.client_address[0],
+                    user_agent=self.headers.get("User-Agent", ""),
+                )
 
             def _stream_responses(self, openai_payload: dict[str, object], model: str) -> None:
                 openai_payload["stream"] = True
                 stream_iter = glm_client.stream_chat_completion(openai_payload)
                 accumulator = ResponsesStreamAccumulator(model=model)
+                stream_start = time.time()
 
                 self.send_response(HTTPStatus.OK)
                 self._send_common_headers()
@@ -690,6 +714,13 @@ class GLM2APIServer:
                     except _CLIENT_DISCONNECTED:
                         pass
 
+                _record_request(request_store, request_detail_store,
+                    method="POST", path=self._path_without_query(), model=model,
+                    status=200, duration_ms=(time.time() - stream_start) * 1000,
+                    client_ip=self.client_address[0],
+                    user_agent=self.headers.get("User-Agent", ""),
+                    is_stream=True,
+                )
                 logger.info("Responses 流式请求完成 model=%s", model)
 
             # ---- Chat completions (original) ----
@@ -700,6 +731,7 @@ class GLM2APIServer:
                 model = str(payload.get("model", "unknown"))
                 logger.info("开始流式响应 model=%s", model)
                 stream_iter = glm_client.stream_chat_completion(payload)
+                stream_start = time.time()
                 self.send_response(HTTPStatus.OK)
                 self._send_common_headers()
                 self.send_header("Content-Type", "text/event-stream; charset=utf-8")
@@ -759,6 +791,13 @@ class GLM2APIServer:
                             self.wfile.flush()
                         except _CLIENT_DISCONNECTED:
                             pass
+                _record_request(request_store, request_detail_store,
+                    method="POST", path=self._path_without_query(), model=model,
+                    status=200, duration_ms=(time.time() - stream_start) * 1000,
+                    client_ip=self.client_address[0],
+                    user_agent=self.headers.get("User-Agent", ""),
+                    is_stream=True,
+                )
                 logger.info("流式请求完成 model=%s", model)
 
             # ---- Auth ----
@@ -807,7 +846,7 @@ class GLM2APIServer:
                 self.send_header("Access-Control-Allow-Origin", config.cors_allow_origin)
                 self.send_header(
                     "Access-Control-Allow-Headers",
-                    "Authorization, Content-Type, x-api-key, anthropic-version",
+                    "Authorization, Content-Type, x-api-key, x-admin-session, anthropic-version",
                 )
                 self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 

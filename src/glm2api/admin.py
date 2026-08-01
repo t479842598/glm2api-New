@@ -5,6 +5,7 @@ Integrates into the existing ThreadingHTTPServer handler class (stdlib only).
 from __future__ import annotations
 
 import hmac
+import itertools
 import json
 import time
 import traceback
@@ -15,6 +16,7 @@ from typing import Any, Callable
 
 from .config import AppConfig
 from .logging_utils import get_buffered_logs
+from . import __version__
 
 COOKIE_NAME = "glm2api_admin_session"
 COOKIE_MAX_AGE = 60 * 60 * 12  # 12 hours
@@ -272,7 +274,7 @@ def _config_payload(config: AppConfig) -> dict[str, object]:
 
 class RequestRecord:
     __slots__ = ("id", "time", "method", "path", "model", "status", "duration_ms", "error")
-    _counter = 0
+    _counter = itertools.count(1)
 
     def __init__(
         self,
@@ -283,8 +285,7 @@ class RequestRecord:
         duration_ms: float = 0,
         error: str = "",
     ) -> None:
-        RequestRecord._counter += 1
-        self.id = RequestRecord._counter
+        self.id = next(RequestRecord._counter)
         self.time = time.strftime("%H:%M:%S")
         self.method = method
         self.path = path
@@ -449,22 +450,8 @@ def handle_admin_config(handler) -> None:
 
 
 def handle_admin_logs(handler) -> None:
-    if not _check_admin(handler):
-        _write_admin_json(handler, _api_err("Login required"), HTTPStatus.UNAUTHORIZED)
-        return
-    qs = handler.path.split("?", 1)[1] if "?" in handler.path else ""
-    params: dict[str, str] = {}
-    for pair in qs.split("&"):
-        if "=" in pair:
-            k, v = pair.split("=", 1)
-            params[k] = v
-    since_id = int(params.get("since_id", "0"))
-    limit = min(int(params.get("limit", "200")), 500)
-    level = params.get("level")
-    _write_admin_json(handler, _api_ok({
-        "items": get_buffered_logs(since_id=since_id, limit=limit, level=level),
-        "limit": limit,
-    }))
+    """兼容旧路由 /admin/api/logs（应用日志），与 /admin/api/app-logs 相同。"""
+    handle_admin_app_logs(handler)
 
 
 def handle_admin_requests(handler) -> None:
@@ -633,8 +620,7 @@ def handle_admin_stats(handler) -> None:
     stats = store.stats()
 
     # 运行时间
-    import time as _time
-    uptime_sec = int(_time.time() - handler._admin_start_time) if hasattr(handler, '_admin_start_time') and handler._admin_start_time else 0
+    uptime_sec = int(time.time() - handler._admin_start_time) if hasattr(handler, '_admin_start_time') and handler._admin_start_time else 0
     hours, remainder = divmod(uptime_sec, 3600)
     minutes, seconds = divmod(remainder, 60)
     uptime_str = f"{hours}h {minutes}m {seconds}s"
@@ -674,7 +660,7 @@ def handle_admin_stats(handler) -> None:
         ][:10],
         "retention": 500,
         "timezone": "local",
-        "version": "0.4.0",
+        "version": __version__,
     }))
 
 
@@ -688,7 +674,7 @@ class RequestDetailRecord:
         "client_ip", "user_agent", "api_key_name", "glm_account", "is_stream",
         "request_headers", "request_body", "response_headers", "raw_response_body",
     )
-    _counter = 0
+    _counter = itertools.count(1)
 
     def __init__(
         self,
@@ -711,11 +697,9 @@ class RequestDetailRecord:
         response_headers: str = "",
         raw_response_body: str = "",
     ) -> None:
-        RequestDetailRecord._counter += 1
-        self.id = RequestDetailRecord._counter
-        import time as _time
-        self.time_str = _time.strftime("%H:%M:%S")
-        self.time_iso = _time.strftime("%Y-%m-%dT%H:%M:%S")
+        self.id = next(RequestDetailRecord._counter)
+        self.time_str = time.strftime("%H:%M:%S")
+        self.time_iso = time.strftime("%Y-%m-%dT%H:%M:%S")
         self.method = method
         self.path = path
         self.url = url
@@ -755,12 +739,11 @@ class RequestDetailRecord:
         }
 
     def to_detail_dict(self) -> dict[str, object]:
-        import json as _json
         body_is_json = False
         body_json = None
         if self.request_body:
             try:
-                body_json = _json.loads(self.request_body)
+                body_json = json.loads(self.request_body)
                 body_is_json = True
             except Exception:
                 pass

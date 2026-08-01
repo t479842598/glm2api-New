@@ -73,7 +73,7 @@ export function usePolling<T>(
 
     const poll = async () => {
       await runRefresh(generation)
-      if (!cancelled) {
+      if (!cancelled && intervalMs > 0) {
         timer = setTimeout(() => {
           void poll()
         }, intervalMs)
